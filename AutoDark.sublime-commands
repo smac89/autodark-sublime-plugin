@@ -1,0 +1,7 @@
+[
+    {
+        "caption": "AutoDark: Set Color Scheme",
+        "command": "auto_dark",
+        "platform": "Linux"
+    },
+]

@@ -1,0 +1,34 @@
+[
+	{
+		"id": "view",
+		"children": [
+			{
+				"platform": "Linux",
+				"caption": "Auto Dark",
+				"children": [
+					{
+						"command": "auto_dark",
+						"caption": "Light",
+						"args": {
+							"mode": "light"
+						},
+					},
+					{
+						"command": "auto_dark",
+						"caption": "Dark",
+						"args": {
+							"mode": "dark"
+						}
+					},
+					{
+						"command": "auto_dark",
+						"caption": "System",
+						"args": {
+							"mode": "system"
+						}
+					}
+				]
+			}
+		]
+	},
+]
