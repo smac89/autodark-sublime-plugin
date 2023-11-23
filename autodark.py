@@ -60,7 +60,6 @@ class AutoDarkCommand(sublime_plugin.ApplicationCommand):
                 systemScheme = result["data"][0]["data"]
                 mode = colorSchemeMap[systemScheme]
             except subprocess.CalledProcessError as e:
-                print(self.name(), f"error: {e.output}")
                 return
         else:
             plugin_settings["auto_dark_mode"] = mode
@@ -148,12 +147,10 @@ def change_color_scheme(mode: str):
     if (theme := settings.get(f"{mode}_theme")) != ui_info.get("theme").get(
         "resolved_value"
     ):
-        print("change theme", theme)
         settings["theme"] = theme
     if (color_scheme := settings.get(f"{mode}_color_scheme")) != ui_info.get(
         "color_scheme"
     ).get("resolved_value"):
-        print("change color_scheme", color_scheme)
         settings["color_scheme"] = color_scheme
 
 
