@@ -7,21 +7,21 @@
 				"caption": "Auto Dark",
 				"children": [
 					{
-						"command": "auto_dark",
+						"command": "auto_dark_linux",
 						"caption": "Light",
 						"args": {
 							"mode": "light"
 						},
 					},
 					{
-						"command": "auto_dark",
+						"command": "auto_dark_linux",
 						"caption": "Dark",
 						"args": {
 							"mode": "dark"
 						}
 					},
 					{
-						"command": "auto_dark",
+						"command": "auto_dark_linux",
 						"caption": "System",
 						"args": {
 							"mode": "system"
@@ -31,4 +31,31 @@
 			}
 		]
 	},
+	{
+		"id": "preferences",
+		"children": [
+			{
+				"caption": "Package Settings",
+				"mnemonic": "P",
+				"id": "package-settings",
+				"children": [
+					{
+						"caption": "AutoDark Linux",
+						"id": "autodarklinux-settings",
+						"platform": "Linux",
+						"children": [
+							{
+								"caption": "Settings",
+								"command": "edit_settings",
+								"args": {
+									"base_file": "${packages}/AutoDarkLinux/AutoDarkLinux.sublime-settings",
+									"default": "// Settings in here override those in \"AutoDarkLinux/AutoDarkLinux.sublime-settings\"\n{\n\t$0\n}\n"
+								}
+							}
+						]
+					}
+				]
+			}
+		]
+	}
 ]

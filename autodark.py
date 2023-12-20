@@ -1,6 +1,6 @@
 import sublime
 import sublime_plugin
-from sublime_lib.st3 import sublime_lib
+from AutoDarkLinux.sublime_lib.st3 import sublime_lib
 
 import os
 import threading
@@ -12,14 +12,14 @@ import functools
 import itertools
 import shutil
 
-from typing import Optional
+from typing import Optional, cast
 
 colorSchemeMap = {1: "dark", 2: "light"}
 daemon = None
 stop_daemon = False
 
 
-class AutoDarkInputHandler(sublime_plugin.ListInputHandler):
+class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
     def name(self):
         return "mode"
 
@@ -33,9 +33,9 @@ class AutoDarkInputHandler(sublime_plugin.ListInputHandler):
         return [("Dark", "dark"), ("Light", "light"), ("System", "system")]
 
 
-class AutoDarkCommand(sublime_plugin.ApplicationCommand):
+class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
     def run(self, mode="system"):
-        plugin_settings = sublime_lib.NamedSettingsDict("AutoDark")
+        plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
         if mode is None or mode == "system":
             plugin_settings["auto_dark_mode"] = "system"
             try:
@@ -59,7 +59,7 @@ class AutoDarkCommand(sublime_plugin.ApplicationCommand):
                 result = json.loads(output)
                 systemScheme = result["data"][0]["data"]
                 mode = colorSchemeMap[systemScheme]
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:
                 return
         else:
             plugin_settings["auto_dark_mode"] = mode
@@ -67,7 +67,7 @@ class AutoDarkCommand(sublime_plugin.ApplicationCommand):
         sublime.set_timeout(functools.partial(change_color_scheme, mode))
 
     def input(self, _):
-        return AutoDarkInputHandler()
+        return AutoDarkLinuxInputHandler()
 
     def is_visible(self) -> bool:
         return sublime.platform() == 'linux'
@@ -78,7 +78,7 @@ class AutoDarkCommand(sublime_plugin.ApplicationCommand):
         return shutil.which('busctl') is not None
 
 
-class AutoDarkEventListener(sublime_plugin.EventListener):
+class AutoDarkLinuxEventListener(sublime_plugin.EventListener):
     def on_pre_close_window(self, _):
         if len(sublime.windows()) == 1:
             unmonitor()
@@ -135,7 +135,7 @@ def listen_auto_mode(new_mode: str, _: Optional[str] = None):
     global daemon
     if new_mode == "system":
         if daemon is None:
-            daemon = threading.Thread(target=monitor, name="AutoDarkMonitor")
+            daemon = threading.Thread(target=monitor, name="AutoDarkLinuxMonitor")
             daemon.start()
     elif daemon is not None:
         unmonitor()
@@ -156,12 +156,12 @@ def change_color_scheme(mode: str):
 
 def plugin_loaded():
     if sublime.platform() != "linux":
-        return sublime.message_dialog("AutoDark plugin only works on Linux")
+        return sublime.message_dialog("AutoDarkLinux plugin only works on Linux")
     if not shutil.which('busctl'):
-        return sublime.message_dialog("AutoDark plugin requires the 'busctl' command from systemd")
-    plugin_settings = sublime_lib.NamedSettingsDict("AutoDark")
+        return sublime.message_dialog("AutoDarkLinux plugin requires the 'busctl' command from systemd")
+    plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
     plugin_settings.subscribe("auto_dark_mode", listen_auto_mode)
-    current_mode = plugin_settings.get("auto_dark_mode", default="system")
+    current_mode = cast(str, plugin_settings.get("auto_dark_mode", default="system"))
     sublime.run_command("auto_dark", args={"mode": current_mode})
     listen_auto_mode(current_mode)
 

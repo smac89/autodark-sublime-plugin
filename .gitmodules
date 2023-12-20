@@ -1,0 +1,3 @@
+[submodule "sublime_lib"]
+	path = sublime_lib
+	url = https://github.com/SublimeText/sublime_lib
