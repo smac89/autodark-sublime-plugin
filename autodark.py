@@ -84,6 +84,9 @@ class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
                 return
         else:
             plugin_settings["auto_dark_mode"] = mode
+            if mode != current_mode:
+                logger.info(f"Color scheme change detected: previous={current_mode}, current={mode}")
+
         plugin_settings.save()
         sublime.set_timeout(functools.partial(change_color_scheme, mode, current_mode))
 
@@ -185,9 +188,6 @@ def change_color_scheme(new_mode: str, old_mode: str):
         "color_scheme"
     ).get("resolved_value"):
         settings["color_scheme"] = color_scheme
-
-    if new_mode != old_mode:
-        logger.info(f"Color scheme changed: previous={old_mode}, current={new_mode}")
 
 
 def plugin_loaded():
