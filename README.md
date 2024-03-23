@@ -22,6 +22,21 @@ Fix auto dark mode for sublime v4 on Linux. Sublime text 4 supposedly has such a
     - `Dark`: Sublime sticks to only dark mode
 - Any option selected is set as the default and will be remembered
 
+## FAQ
+
+- **Q:** Switching to system mode does not automatically infer my preferred colorscheme
+
+    **A**: This might be caused when you have two competing xdg-desktop-portal implementations installed on your system. _e.g. `kde` and `gtk`, but `gtk` wins because its name comes first alphabetically._:shrug:
+
+    You can check the `/usr/share/xdg-desktop-portal/portals/` folder to see which portals are installed. e.g. `kde.portal`, `gkt.portal`, etc. Once you determine which implementation you want to use (this would most likely be determined by your current desktop), create a file called `~/.config/xdg-desktop-portal/portals.conf` (see [portals.conf manpage](https://man.archlinux.org/man/portals.conf.5)), and add the following to it:
+
+    ```ini
+    [preferred]
+    default=enter-your-choice-here-without.portal-suffix
+    ```
+    Restart xdg-desktop-portal service using `systemctl restart --user xdg-desktop-service`, or logout and log back in to see the new changes.
+
+    This should hopefully fix the issue with automatically switching modes.
 ---
 
 ## Development
@@ -35,12 +50,17 @@ These are just reminders for myself, but feel free to follow along if you need t
     See [link](https://www.sublimetext.com/docs/packages.html) for more info.
 
     _Note: The reason for using the name **AutoDarkLinux** is because that's the name this plugin was published under. It's also the name you have to use if you want to import other modules from within this package during development and at runtime._
-2. Enable viewing of commands and logs from the console. Open console with `` Ctrl + ` `` and type the following commands:
+2. If the `sublime_lib` submodule is not ready, inside the folder, run the command:
+    ```
+    git submodule update
+    ```
+2. Restart sublime to make sure the plugin is loaded. Enable viewing of commands and logs from the console. Open console with `` Ctrl + ` `` and type the following commands:
     ```py
     sublime.log_commands(True)
     sublime.log_input(True)
     ```
-3. Start developing :hammer: (See more [docs](https://www.sublimetext.com/docs/))
+3. Start developing :hammer: (see [docs](https://www.sublimetext.com/docs/), especially [api_ref](https://www.sublimetext.com/docs/api_reference.html), and this [one](https://forum.sublimetext.com/t/solved-where-and-how-do-i-store-internal-package-settings/48843))
+3. Enable [`INFO`](https://docs.python.org/3.8/library/logging.html#levels) logging to see more logs in the console
 4. Commit changes
 5. Release a new version using the `release.sh` script
 6. Remove the symlinked dev package from the sublime folder
