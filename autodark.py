@@ -10,14 +10,18 @@ import subprocess
 import json
 import fcntl
 import functools
+import pathlib
+import signal
 import itertools
 import shutil
+import contextlib
+
 
 from typing import Optional, cast
 
 colorSchemeMap = {1: "dark", 2: "light"}
 daemon = None
-stop_daemon = False
+stopDaemon = False
 
 logger = logging.getLogger(__package__)
 handler = logging.StreamHandler()
@@ -29,8 +33,8 @@ formatter = logging.Formatter(
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.INFO)
-logger.propagate = False  # prevent root logger from catching this
+logger.setLevel(logging.WARNING)
+logger.propagate = False
 
 
 class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
@@ -106,10 +110,11 @@ class AutoDarkLinuxEventListener(sublime_plugin.EventListener):
 def unmonitor():
     global daemon
     if daemon is not None and daemon.is_alive():
-        global stop_daemon
-        stop_daemon = True
+        global stopDaemon
+        stopDaemon = True
         daemon.join()
         daemon = None
+        logger.info("Daemon stopped")
 
 
 def monitor():
@@ -127,9 +132,11 @@ def monitor():
     ) as proc:
         assert proc.stdout is not None
         fcntl.fcntl(proc.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
-        global stop_daemon
+        pidPath.write_text(f'{proc.pid}')
+        logger.info("Daemon started with pid: %d", proc.pid)
+        global stopDaemon
         while proc.poll() is None:
-            if stop_daemon:
+            if stopDaemon:
                 proc.kill()
                 break
             data = None
@@ -147,8 +154,8 @@ def monitor():
             mode = colorSchemeMap[systemScheme]
             sublime.set_timeout(functools.partial(change_color_scheme, mode))
         else:
+            stopDaemon = True
             proc.kill()
-            stop_daemon = True
 
 
 def listen_auto_mode(new_mode: str, _: Optional[str] = None):
@@ -192,6 +199,6 @@ def plugin_loaded():
 
 
 def plugin_unloaded():
-    unmonitor()
     # save settings before the plugin is unloaded
     sublime.save_settings("Preferences.sublime-settings")
+    unmonitor()
