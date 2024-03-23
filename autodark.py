@@ -118,6 +118,12 @@ def unmonitor():
 
 
 def monitor():
+    pidPath = pathlib.Path(sublime.cache_path()) / f'{__package__}/daemon.pid'
+    with contextlib.suppress(FileNotFoundError, ValueError, ProcessLookupError):
+        with open(pidPath, "r") as pid:
+            daemon_pid=int(next(pid))
+            os.kill(daemon_pid, signal.SIGTERM)
+
     with subprocess.Popen(
         [
             "/usr/bin/busctl",
