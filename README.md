@@ -21,3 +21,25 @@ Fix auto dark mode for sublime v4 on Linux. Sublime text 4 supposedly has such a
     - `Light`: Sublime sticks to only light mode
     - `Dark`: Sublime sticks to only dark mode
 - Any option selected is set as the default and will be remembered
+
+---
+
+## Development
+These are just reminders for myself, but feel free to follow along if you need to start developing packages
+
+1. Clone this project into the folder `~/.config/sublime-text-3/Packages/AutoDarkLinux`. If you already cloned the project elsewhere, just symlink it inside the above folder using the command:
+    ```sh
+    ln --symbolic --target-directory ~/.config/sublime-text-3/Packages/  /path/to/autodark-sublime-plugin/
+    mv ~/.config/sublime-text-3/Packages/{autodark-sublime-plugin,AutoDarkLinux}
+    ```
+    See [link](https://www.sublimetext.com/docs/packages.html) for more info.
+
+    _Note: The reason for using the name **AutoDarkLinux** is because that's the name this plugin was published under. It's also the name you have to use if you want to import other modules from within this package during development and at runtime._
+2. Enable viewing of commands and logs from the console. Open console with `` Ctrl + ` `` and type the following commands:
+    ```py
+    sublime.log_commands(True)
+    sublime.log_input(True)
+    ```
+3. Start developing :hammer: (See more [docs](https://www.sublimetext.com/docs/))
+4. Commit changes
+5. Release a new version using the `release.sh` script
