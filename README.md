@@ -43,3 +43,4 @@ These are just reminders for myself, but feel free to follow along if you need t
 3. Start developing :hammer: (See more [docs](https://www.sublimetext.com/docs/))
 4. Commit changes
 5. Release a new version using the `release.sh` script
+6. Remove the symlinked dev package from the sublime folder
