@@ -100,12 +100,12 @@ class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
 
 
 class AutoDarkLinuxEventListener(sublime_plugin.EventListener):
-    def on_pre_close_window(self, _):
-        if len(sublime.windows()) == 1:
-            unmonitor()
-            # save settings before closing the last window
-            sublime.save_settings("Preferences.sublime-settings")
-
+    def on_exit(self):
+        logger.info("Exiting, cleaning up")
+        # save settings before closing the last window
+        sublime.save_settings("Preferences.sublime-settings")
+        unmonitor()
+        logger.info("Bye, bye!")
 
 def unmonitor():
     global daemon
