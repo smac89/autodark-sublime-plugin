@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 from AutoDarkLinux.sublime_lib.st3 import sublime_lib
+import logging
 
 import os
 import threading
@@ -17,6 +18,19 @@ from typing import Optional, cast
 colorSchemeMap = {1: "dark", 2: "light"}
 daemon = None
 stop_daemon = False
+
+logger = logging.getLogger(__package__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    fmt="[{asctime} {name}] {levelname}: {message}",
+    datefmt=logging.Formatter.default_time_format,
+    style="{",
+    validate=True,
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False  # prevent root logger from catching this
 
 
 class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
@@ -36,6 +50,7 @@ class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
 class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
     def run(self, mode="system"):
         plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
+        current_mode = plugin_settings.get("auto_dark_mode", "system")
         if mode is None or mode == "system":
             plugin_settings["auto_dark_mode"] = "system"
             try:
@@ -60,22 +75,24 @@ class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
                 systemScheme = result["data"][0]["data"]
                 mode = colorSchemeMap[systemScheme]
             except subprocess.CalledProcessError:
+                logger.exception("Unable to read system xdg-portal settings")
+                plugin_settings.save()
                 return
         else:
             plugin_settings["auto_dark_mode"] = mode
         plugin_settings.save()
-        sublime.set_timeout(functools.partial(change_color_scheme, mode))
+        sublime.set_timeout(functools.partial(change_color_scheme, mode, current_mode))
 
     def input(self, _):
         return AutoDarkLinuxInputHandler()
 
     def is_visible(self) -> bool:
-        return sublime.platform() == 'linux'
+        return sublime.platform() == "linux"
 
     def is_enabled(self) -> bool:
         # This option is used to conditionally enable
         # menu items that depend on this command
-        return shutil.which('busctl') is not None
+        return shutil.which("busctl") is not None
 
 
 class AutoDarkLinuxEventListener(sublime_plugin.EventListener):
@@ -110,8 +127,8 @@ def monitor():
     ) as proc:
         assert proc.stdout is not None
         fcntl.fcntl(proc.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
+        global stop_daemon
         while proc.poll() is None:
-            global stop_daemon
             if stop_daemon:
                 proc.kill()
                 break
@@ -129,6 +146,9 @@ def monitor():
             systemScheme = data["payload"]["data"][2]["data"]
             mode = colorSchemeMap[systemScheme]
             sublime.set_timeout(functools.partial(change_color_scheme, mode))
+        else:
+            proc.kill()
+            stop_daemon = True
 
 
 def listen_auto_mode(new_mode: str, _: Optional[str] = None):
@@ -141,29 +161,34 @@ def listen_auto_mode(new_mode: str, _: Optional[str] = None):
         unmonitor()
 
 
-def change_color_scheme(mode: str):
+def change_color_scheme(new_mode: str, old_mode: str):
     settings = sublime_lib.NamedSettingsDict("Preferences")
     ui_info = sublime.ui_info()
-    if (theme := settings.get(f"{mode}_theme")) != ui_info.get("theme").get(
+    if (theme := settings.get(f"{new_mode}_theme")) != ui_info.get("theme").get(
         "resolved_value"
     ):
         settings["theme"] = theme
-    if (color_scheme := settings.get(f"{mode}_color_scheme")) != ui_info.get(
+    if (color_scheme := settings.get(f"{new_mode}_color_scheme")) != ui_info.get(
         "color_scheme"
     ).get("resolved_value"):
         settings["color_scheme"] = color_scheme
+
+    if new_mode != old_mode:
+        logger.info(f"Color scheme changed: previous={old_mode}, current={new_mode}")
 
 
 def plugin_loaded():
     if sublime.platform() != "linux":
         return sublime.message_dialog("AutoDarkLinux plugin only works on Linux")
-    if not shutil.which('busctl'):
-        return sublime.message_dialog("AutoDarkLinux plugin requires the 'busctl' command from systemd")
+    if not shutil.which("busctl"):
+        return sublime.message_dialog(
+            "AutoDarkLinux plugin requires the 'busctl' command from systemd"
+        )
     plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
     plugin_settings.subscribe("auto_dark_mode", listen_auto_mode)
     current_mode = cast(str, plugin_settings.get("auto_dark_mode", default="system"))
-    sublime.run_command("auto_dark", args={"mode": current_mode})
     listen_auto_mode(current_mode)
+    sublime.run_command("auto_dark", args={"mode": current_mode})
 
 
 def plugin_unloaded():
