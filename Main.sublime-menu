@@ -9,22 +9,25 @@
 					{
 						"command": "auto_dark_linux",
 						"caption": "Light",
+						"checkbox": true,
 						"args": {
-							"mode": "light"
+							"new_mode": "light"
 						},
 					},
 					{
 						"command": "auto_dark_linux",
 						"caption": "Dark",
+						"checkbox": true,
 						"args": {
-							"mode": "dark"
+							"new_mode": "dark"
 						}
 					},
 					{
 						"command": "auto_dark_linux",
 						"caption": "System",
+						"checkbox": true,
 						"args": {
-							"mode": "system"
+							"new_mode": "system"
 						}
 					}
 				]

@@ -96,6 +96,10 @@ class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
     def is_visible(self) -> bool:
         return sublime.platform() == "linux"
 
+    def is_checked(self, new_mode):
+        plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
+        return new_mode == plugin_settings.get("auto_dark_mode", "system")
+
     def is_enabled(self) -> bool:
         return shutil.which("busctl") is not None
 
