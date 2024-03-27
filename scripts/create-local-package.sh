@@ -4,21 +4,10 @@
 set -e
 
 if [ -n "$1" ]; then
-  git archive --format=zip --prefix=AutoDarkLinux/ "$1" >AutoDarkLinux.sublime-package
+  git archive --format=zip --prefix=AutoDarkLinux/ "$1" --output AutoDarkLinux.sublime-package
 else
-  echo "No version specified. Archiving current branch"
-
-  trap 'git checkout main; git branch -D release' 'EXIT'
-
-  git checkout -B release
-  git submodule update --init --checkout sublime_lib
-  mv sublime_lib sublime_lib_tmp
-  git rm -r --cached sublime_lib
-  rm -rf sublime_lib_tmp/.git
-  mv sublime_lib_tmp sublime_lib
-  git add sublime_lib
-  git archive --format=zip --prefix=AutoDarkLinux/ release >AutoDarkLinux.sublime-package
-  git submodule deinit sublime_lib
+  echo "No version specified. Archiving main branch" >&2
+  git archive --format=zip main --output AutoDarkLinux.sublime-package
 fi
 
-echo -e '\n===Archive created. Copy it to your "Installed Packages" folder or "User" folder===\n'
+echo -e '\n===Archive created. Copy it to your "Installed Packages" folder===\n'
