@@ -104,10 +104,11 @@ def plugin_unloaded():
 def monitor():
     pid_file = pathlib.Path(sublime.cache_path()) / f"{__package__}/daemon.pid"
     with contextlib.suppress(FileNotFoundError, ValueError, ProcessLookupError):
-        with open(pid_file, "r") as pid:
+        with pid_file.open() as pid:
             daemon_pid = int(next(pid))
             os.kill(daemon_pid, signal.SIGTERM)
 
+    pid_file.parent.mkdir(parents=True, exist_ok=True)
     current_mode = read_system_theme()
     with subprocess.Popen(
         [
