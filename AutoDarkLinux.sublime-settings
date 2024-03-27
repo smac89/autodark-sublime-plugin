@@ -1,3 +1,4 @@
 {
-	"auto_dark_mode": "system"
+	"auto_dark_mode": "system",
+	"debug": false
 }

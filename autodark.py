@@ -1,8 +1,6 @@
 import logging
 import sublime
 import sublime_plugin
-from AutoDarkLinux.sublime_lib.st3 import sublime_lib
-import logging
 
 import os
 import threading
