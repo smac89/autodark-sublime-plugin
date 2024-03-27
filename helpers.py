@@ -14,7 +14,7 @@ Prev = TypeVar("Prev")
 New = TypeVar("New")
 
 
-def settings_listener(prop_selector: str):
+def settings_watcher(prop_selector: str):
     prop_getter = tuple(map(operator.itemgetter, prop_selector.split(".")))
     app_settings: Any = None
 

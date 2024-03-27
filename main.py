@@ -15,7 +15,7 @@ import shutil
 import contextlib
 import uuid
 
-from .helpers import settings_listener, read_system_theme, parse_dbus_monitor
+from .helpers import settings_watcher, read_system_theme, parse_dbus_monitor
 from .lifecycle import lifecycle, CycleStage
 from .logger import logger
 
@@ -181,8 +181,8 @@ def change_color_scheme(new_scheme: str, old_scheme: Optional[str] = None):
         sublime.save_settings("Preferences.sublime-settings")
 
 
-@settings_listener("auto_dark_mode")
-def listen_auto_mode(new_mode: str, old_mode: str = ""):
+@settings_watcher("auto_dark_mode")
+def watch_auto_dark_mode(new_mode: str, old_mode: str = ""):
     global daemon, stop_daemon
     unmonitor()
     if new_mode == "system":
@@ -193,8 +193,8 @@ def listen_auto_mode(new_mode: str, old_mode: str = ""):
         sublime.run_command("auto_dark_linux", args={"new_mode": new_mode})
 
 
-@settings_listener("debug")
-def listen_debug(new_value: bool, old_value=False):
+@settings_watcher("debug")
+def watch_debug(new_value: bool, old_value=False):
     if new_value:
         logger.setLevel(logging.INFO)
         logger.info("Turned on debug logging")
@@ -205,7 +205,7 @@ def listen_debug(new_value: bool, old_value=False):
 
 @plugin_loaded.notify()
 @plugin_unloaded.notify()
-def watch_settings(life_cycle=CycleStage.NONE, tags=[uuid.uuid4(), uuid.uuid4()]):
+def listen_settings(life_cycle=CycleStage.NONE, tags=[uuid.uuid4(), uuid.uuid4()]):
     # the use of mutable key 'tags' is to persist the value across
     # multiple function calls
     mode_tag, debug_tag = tags
@@ -213,10 +213,10 @@ def watch_settings(life_cycle=CycleStage.NONE, tags=[uuid.uuid4(), uuid.uuid4()]
     if life_cycle == CycleStage.LOADED:
         logger.info(f"Plugin load detected.")
 
-        listen_auto_mode()
-        plugin_settings.add_on_change(str(mode_tag), listen_auto_mode)
-        listen_debug()
-        plugin_settings.add_on_change(str(debug_tag), listen_debug)
+        watch_auto_dark_mode()
+        plugin_settings.add_on_change(str(mode_tag), watch_auto_dark_mode)
+        watch_debug()
+        plugin_settings.add_on_change(str(debug_tag), watch_debug)
 
     elif life_cycle == CycleStage.UNLOADED:
         logger.info(f"Plugin unloaded.")
