@@ -184,6 +184,7 @@ def change_color_scheme(new_scheme: str, old_scheme: Optional[str] = None):
 @settings_watcher("auto_dark_mode")
 def watch_auto_dark_mode(new_mode: str, old_mode: str = ""):
     global daemon, stop_daemon
+    logger.info(f"Detected mode change. Previous={old_mode}, New={new_mode}")
     unmonitor()
     if new_mode == "system":
         stop_daemon = False

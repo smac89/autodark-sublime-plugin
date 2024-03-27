@@ -6,9 +6,7 @@ from types import MappingProxyType
 import operator
 import json
 import subprocess
-
-
-from .logger import logger
+import logging
 
 Prev = TypeVar("Prev")
 New = TypeVar("New")
@@ -34,9 +32,6 @@ def settings_watcher(prop_selector: str):
             if saved_value is None or new_value != saved_value:
                 previous_value = saved_value
                 saved_value = new_value
-                logger.info(
-                    f"Detected setting change for key: '{prop_selector}'. Previous={previous_value}, New={new_value}"
-                )
                 return fn(new_value, previous_value)
 
         return wrapper
@@ -80,5 +75,5 @@ def read_system_theme():
         )
         return parse_dbus_call(output)
     except subprocess.SubprocessError:
-        logger.exception("Unable to read theme portal settings")
+        logging.getLogger(__package__).exception("Unable to read theme portal settings")
         return None
