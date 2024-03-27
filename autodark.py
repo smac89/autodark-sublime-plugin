@@ -33,13 +33,15 @@ formatter = logging.Formatter(
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.WARN)
 logger.propagate = False
 
 
 class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
     def name(self):
-        return "mode"
+        # this is used to determine the name of the argument passed to the
+        # auto_dark_linux command when a list item is picked
+        return "new_mode"
 
     def validate(self, text):
         return True
