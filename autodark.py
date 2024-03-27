@@ -83,36 +83,71 @@ class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
 
 class AutoDarkLinuxEventListener(sublime_plugin.EventListener):
     def on_exit(self):
-        logger.info("Exiting, cleaning up")
-        # save settings before closing the last window
+        logger.info("Exiting. Cleaning up")
         sublime.save_settings("Preferences.sublime-settings")
         unmonitor()
-        logger.info("Bye, bye!")
+        logger.info("Exited")
+
+def read_system_theme():
+    try:
+        output = subprocess.check_output(
+            [
+                "/usr/bin/busctl",
+                "--user",
+                "--json=short",
+                "call",
+                "org.freedesktop.portal.Desktop",
+                "/org/freedesktop/portal/desktop",
+                "org.freedesktop.portal.Settings",
+                "ReadOne",
+                "ss",
+                "org.freedesktop.appearance",
+                "color-scheme",
+            ],
+            universal_newlines=True,
+            stderr=subprocess.STDOUT,
+        )
+        result = json.loads(output)
+        system_scheme = result["data"][0]["data"]
+        return colorSchemeMap[system_scheme]
+    except subprocess.SubprocessError:
+        logger.exception("Unable to read system xdg-portal settings")
+        return None
 
 def unmonitor():
     global daemon
-    if daemon is not None and daemon.is_alive():
-        global stopDaemon
-        stopDaemon = True
-        daemon.join()
+    if daemon is not None:
+        global stop_daemon
+        stop_daemon = True
+        if threading.current_thread() == threading.main_thread():
+            daemon.join()
         daemon = None
         logger.info("Daemon stopped")
 
-
 def monitor():
-    pidPath = pathlib.Path(sublime.cache_path()) / f'{__package__}/daemon.pid'
+    pid_file = pathlib.Path(sublime.cache_path()) / f"{__package__}/daemon.pid"
     with contextlib.suppress(FileNotFoundError, ValueError, ProcessLookupError):
-        with open(pidPath, "r") as pid:
-            daemon_pid=int(next(pid))
+        with open(pid_file, "r") as pid:
+            daemon_pid = int(next(pid))
             os.kill(daemon_pid, signal.SIGTERM)
 
+    current_mode = read_system_theme()
     with subprocess.Popen(
         [
             "/usr/bin/busctl",
             "--user",
             "--json=short",
             "--match",
-            "type='signal',interface='org.freedesktop.portal.Settings',path='/org/freedesktop/portal/desktop',member='SettingChanged',arg0='org.freedesktop.appearance',arg1='color-scheme'",
+            ",".join(
+                [
+                    "type='signal'",
+                    "interface='org.freedesktop.portal.Settings'",
+                    "path='/org/freedesktop/portal/desktop'",
+                    "member='SettingChanged'",
+                    "arg0='org.freedesktop.appearance'",
+                    "arg1='color-scheme'",
+                ]
+            ),
             "monitor",
         ],
         stdout=subprocess.PIPE,
