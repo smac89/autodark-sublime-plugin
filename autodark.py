@@ -215,8 +215,11 @@ def plugin_loaded():
         return sublime.message_dialog(
             "AutoDarkLinux plugin requires the 'busctl' command from systemd"
         )
-    plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
-    plugin_settings.subscribe("auto_dark_mode", listen_auto_mode)
+    try:
+        plugin_settings = sublime_lib.NamedSettingsDict("AutoDarkLinux")
+    except Exception:
+        logger.exception("Unable to read settings")
+        return
     current_mode = cast(str, plugin_settings.get("auto_dark_mode", default="system"))
     sublime.run_command("auto_dark_linux", args={"new_mode": current_mode})
     listen_auto_mode(current_mode)
