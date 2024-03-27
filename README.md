@@ -62,5 +62,5 @@ These are just reminders for myself, but feel free to follow along if you need t
 3. Start developing :hammer: (see [docs](https://www.sublimetext.com/docs/), especially [api_ref](https://www.sublimetext.com/docs/api_reference.html), and this [one](https://forum.sublimetext.com/t/solved-where-and-how-do-i-store-internal-package-settings/48843))
 3. Enable [`INFO`](https://docs.python.org/3.8/library/logging.html#levels) logging to see more logs in the console
 4. Commit changes
-5. Release a new version using the `release.sh` script
+5. Release a new version using the `scripts/release.sh` script
 6. Remove the symlinked dev package from the sublime folder
