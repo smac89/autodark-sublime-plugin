@@ -92,7 +92,6 @@ def plugin_loaded():
         )
     global plugin_settings
     plugin_settings = sublime.load_settings(plugin_settings_file)
-    return plugin_settings.get("auto_dark_mode", "system")
 
 
 @lifecycle(CycleStage.UNLOADED)
@@ -182,7 +181,7 @@ def change_color_scheme(new_scheme: str, old_scheme: Optional[str] = None):
 
 
 @settings_listener("auto_dark_mode")
-def listen_auto_mode(new_mode: str, old_mode: Optional[str] = None):
+def listen_auto_mode(new_mode: str, old_mode: str = ""):
     global daemon, stop_daemon
     unmonitor()
     if new_mode == "system":
@@ -193,17 +192,32 @@ def listen_auto_mode(new_mode: str, old_mode: Optional[str] = None):
         sublime.run_command("auto_dark_linux", args={"new_mode": new_mode})
 
 
-@plugin_loaded.notify(include_result=True)
+@settings_listener("debug")
+def listen_debug(new_value: bool, old_value=False):
+    if new_value:
+        logger.setLevel(logging.INFO)
+        logger.info("Turned on debug logging")
+    else:
+        logger.info("Turning off debug logging...")
+        logger.setLevel(logging.WARNING)
+
+
+@plugin_loaded.notify()
 @plugin_unloaded.notify()
-def watch_settings(life_cycle=CycleStage.NONE, result="", tag=[uuid.uuid4()]):
-    # the use of mutable key 'tag' is to persist the value across
+def watch_settings(life_cycle=CycleStage.NONE, tags=[uuid.uuid4(), uuid.uuid4()]):
+    # the use of mutable key 'tags' is to persist the value across
     # multiple function calls
+    mode_tag, debug_tag = tags
+
     if life_cycle == CycleStage.LOADED:
-        if plugin_settings.get("debug", False):
-            logger.setLevel(logging.INFO)
-        logger.info(f"Plugin load detected. Initial mode={result}")
-        sublime.run_command("auto_dark_linux", args={"new_mode": result})
-        plugin_settings.add_on_change(str(tag[0]), listen_auto_mode)
+        logger.info(f"Plugin load detected.")
+
+        listen_auto_mode()
+        plugin_settings.add_on_change(str(mode_tag), listen_auto_mode)
+        listen_debug()
+        plugin_settings.add_on_change(str(debug_tag), listen_debug)
+
     elif life_cycle == CycleStage.UNLOADED:
-        logger.info(f"Plugin unload detected. Removing listener with tag='{str(tag[0])}'")
-        plugin_settings.clear_on_change(str(tag[0]))
+        logger.info(f"Plugin unloaded.")
+        plugin_settings.clear_on_change(str(mode_tag))
+        plugin_settings.clear_on_change(str(debug_tag))

@@ -1,6 +1,6 @@
 import sublime
 
-from typing import Callable, Any, Literal, cast
+from typing import Callable, Any, Literal, TypeVar, cast
 from functools import wraps, reduce
 from types import MappingProxyType
 import operator
@@ -10,12 +10,15 @@ import subprocess
 
 from .logger import logger
 
+Prev = TypeVar("Prev")
+New = TypeVar("New")
+
 
 def settings_listener(prop_selector: str):
     prop_getter = tuple(map(operator.itemgetter, prop_selector.split(".")))
     app_settings: Any = None
 
-    def decorator(fn: Callable):
+    def decorator(fn: Callable[[Prev, New], Any]):
         saved_value: Any = None
 
         def setup_app_settings():
@@ -23,7 +26,7 @@ def settings_listener(prop_selector: str):
             app_settings = sublime.load_settings(f"{__package__}.sublime-settings")
 
         @wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper():
             nonlocal saved_value
             if app_settings is None:
                 setup_app_settings()
@@ -34,7 +37,7 @@ def settings_listener(prop_selector: str):
                 logger.info(
                     f"Detected setting change for key: '{prop_selector}'. Previous={previous_value}, New={new_value}"
                 )
-                return fn(new_value, previous_value, *args, **kwargs)
+                return fn(new_value, previous_value)
 
         return wrapper
 
