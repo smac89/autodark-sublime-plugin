@@ -50,6 +50,7 @@ These are just reminders for myself, but feel free to follow along if you need t
     See [link](https://www.sublimetext.com/docs/packages.html) for more info.
 
     _Note: The reason for using the name **AutoDarkLinux** is because that's the name this plugin was published under. It's also the name you have to use if you want to import other modules from within this package during development and at runtime._
+2. (Optional) Install the virtualenv using `pipenv install --dev`. This is useful for auto completion during development
 2. Restart sublime to make sure the plugin is loaded. Enable viewing of commands and logs from the console. Open console with `` Ctrl + ` `` and type the following commands:
     ```py
     sublime.log_commands(True)
