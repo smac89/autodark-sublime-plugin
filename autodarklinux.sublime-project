@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "AutoDarkLinux",
+			"path": ".",
+		}
+	],
+	"settings": {
+		"python-black": {
+			"format_on_save": "on",
+			"options": {
+				"line_length": 100
+			}
+		}
+	},
+	"build_systems": []
+}
