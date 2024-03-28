@@ -28,11 +28,16 @@ def settings_watcher(prop_selector: str):
             nonlocal saved_value
             if app_settings is None:
                 setup_app_settings()
-            new_value = reduce(lambda setting, f: f(setting), prop_getter, app_settings)
-            if saved_value is None or new_value != saved_value:
-                previous_value = saved_value
-                saved_value = new_value
-                return fn(new_value, previous_value)
+            try:
+                new_value = reduce(lambda setting, f: f(setting), prop_getter, app_settings)
+                if saved_value is None or new_value != saved_value:
+                    previous_value = saved_value
+                    saved_value = new_value
+                    return fn(new_value, previous_value)
+            except KeyError:
+                logging.getLogger(__package__).exception(f"Unable to read {prop_selector}")
+                if saved_value is not None:
+                    return fn(saved_value, saved_value)
 
         return wrapper
 

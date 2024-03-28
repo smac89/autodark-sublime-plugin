@@ -91,6 +91,7 @@ def plugin_loaded():
             "AutoDarkLinux plugin requires the 'busctl' command from systemd"
         )
     global plugin_settings
+    sublime.save_settings(plugin_settings_file)
     plugin_settings = sublime.load_settings(plugin_settings_file)
 
 
