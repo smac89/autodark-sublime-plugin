@@ -99,6 +99,7 @@ def plugin_loaded():
 def plugin_unloaded():
     # save settings before the plugin is unloaded
     sublime.save_settings("Preferences.sublime-settings")
+    sublime.save_settings(plugin_settings_file)
     unmonitor()
 
 
