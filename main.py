@@ -40,8 +40,15 @@ class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
     def placeholder(self):
         return "Choose mode"
 
-    def list_items(self):
-        return [("Dark", "dark"), ("Light", "light"), ("System", "system")]
+    def description(self, _: str, text: str):
+        # TODO: Test this
+        return f"{text} Mode"
+
+    def list_items(self, options=[("Light", "light"), ("Dark", "dark"), ("System", "system")]):
+        # TODO: Test this
+        mode = plugin_settings.get("auto_dark_mode", "system")
+        index = next((i for i, v in enumerate(options) if v[1] == mode.lower()))
+        return (options, index)
 
 
 class AutoDarkLinuxCommand(sublime_plugin.ApplicationCommand):
