@@ -38,7 +38,7 @@ class AutoDarkLinuxInputHandler(sublime_plugin.ListInputHandler):
         return True
 
     def placeholder(self):
-        return "Color scheme mode"
+        return "Choose mode"
 
     def list_items(self):
         return [("Dark", "dark"), ("Light", "light"), ("System", "system")]

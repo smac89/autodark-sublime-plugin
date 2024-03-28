@@ -1,6 +1,6 @@
 [
     {
-        "caption": "AutoDark: Set Color Scheme",
+        "caption": "AutoDark: Set default mode",
         "command": "auto_dark_linux",
         "platform": "Linux"
     },
